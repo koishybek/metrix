@@ -26,26 +26,38 @@ export interface ServiceRequest {
 }
 
 export const uploadPhoto = async (file: File, path: string): Promise<string> => {
-  try {
-    const storageRef = ref(storage, path);
-    
-    // Create a timeout promise (30 seconds)
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('Upload timed out')), 30000);
-    });
+  let attempts = 0;
+  const maxAttempts = 3;
 
-    // Race between upload and timeout
-    const snapshot = await Promise.race([
-      uploadBytes(storageRef, file),
-      timeoutPromise
-    ]);
+  while (attempts < maxAttempts) {
+    try {
+      const storageRef = ref(storage, path);
+      
+      // Increased timeout to 90 seconds per attempt
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Upload timed out')), 90000);
+      });
 
-    const downloadURL = await getDownloadURL(snapshot.ref);
-    return downloadURL;
-  } catch (error) {
-    console.error("Error uploading photo:", error);
-    throw error;
+      // Using uploadBytes for simplicity with Blob/File
+      const snapshot = await Promise.race([
+        uploadBytes(storageRef, file),
+        timeoutPromise
+      ]);
+
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      return downloadURL;
+    } catch (error) {
+      attempts++;
+      console.error(`Upload attempt ${attempts} failed:`, error);
+      
+      if (attempts >= maxAttempts) {
+        throw error;
+      }
+      // Wait 1 second before retrying
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
   }
+  throw new Error('All upload attempts failed');
 };
 
 export const createServiceRequest = async (

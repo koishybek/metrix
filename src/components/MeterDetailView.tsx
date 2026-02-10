@@ -43,6 +43,12 @@ export const MeterDetailView: React.FC<MeterDetailViewProps> = ({ meter, savedMe
   const handleFileSelect = async (file: File | null) => {
     setSelectedFile(file);
     if (file) {
+      // Skip compression if file is small (< 200KB)
+      if (file.size < 200 * 1024) {
+        setCompressedFile(file);
+        return;
+      }
+
       setIsCompressing(true);
       try {
         const compressed = await compressImage(file);
