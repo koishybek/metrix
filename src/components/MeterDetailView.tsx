@@ -9,11 +9,16 @@ import {
   Bell, 
   Clock, 
   Edit2,
-  AlertTriangle
+  AlertTriangle,
+  Loader2,
+  CheckCircle2
 } from 'lucide-react';
 import { SavedMeter } from '../services/db';
 import { HistoryChart } from './HistoryChart';
 import { useI18n } from '../context/I18nContext';
+import { PhotoUpload } from './PhotoUpload';
+import { createServiceRequest, uploadPhoto } from '../services/requests';
+import { useAuth } from '../context/AuthContext';
 
 interface MeterDetailViewProps {
   meter: MeterData;
@@ -24,7 +29,12 @@ interface MeterDetailViewProps {
 export const MeterDetailView: React.FC<MeterDetailViewProps> = ({ meter, savedMeter, onBack }) => {
   const [activeTab, setActiveTab] = useState<'info' | 'readings' | 'notifications'>('readings');
   const [readingInput, setReadingInput] = useState<string>('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  
   const { t, language } = useI18n();
+  const { user } = useAuth();
 
   const formatDate = (dateString?: string | null) => {
     if (!dateString) return t('detail.not_specified');
@@ -32,6 +42,55 @@ export const MeterDetailView: React.FC<MeterDetailViewProps> = ({ meter, savedMe
       return new Date(dateString).toLocaleDateString(language === 'en' ? 'en-US' : language === 'kz' ? 'kk-KZ' : 'ru-RU');
     } catch (e) {
       return t('detail.not_specified');
+    }
+  };
+
+  const handleSubmitReading = async () => {
+    if (!user) {
+      alert('Пожалуйста, войдите в систему');
+      return;
+    }
+
+    if (!readingInput) {
+      alert('Пожалуйста, введите показания');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      let photoUrl = undefined;
+      
+      if (selectedFile) {
+        // Create a unique path for the photo
+        const timestamp = Date.now();
+        const path = `readings/${user.id}/${meter.serial}/${timestamp}_${selectedFile.name}`;
+        photoUrl = await uploadPhoto(selectedFile, path);
+      }
+
+      await createServiceRequest(
+        user.id,
+        user.phone,
+        'reading_submit',
+        `Передача показаний для счетчика ${meter.serial}`,
+        meter.serial,
+        photoUrl,
+        parseFloat(readingInput)
+      );
+
+      setSubmitSuccess(true);
+      setReadingInput('');
+      setSelectedFile(null);
+      
+      // Reset success message after 3 seconds
+      setTimeout(() => {
+        setSubmitSuccess(false);
+      }, 3000);
+
+    } catch (error) {
+      console.error('Error submitting reading:', error);
+      alert('Ошибка при отправке данных. Попробуйте позже.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -92,7 +151,7 @@ export const MeterDetailView: React.FC<MeterDetailViewProps> = ({ meter, savedMe
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="flex justify-between items-center">
             <p className="text-gray-400 text-sm">{t('detail.current_reading_date')}</p>
             <p className="font-medium">
@@ -117,10 +176,27 @@ export const MeterDetailView: React.FC<MeterDetailViewProps> = ({ meter, savedMe
               </div>
             </div>
           </div>
+          
+          <PhotoUpload 
+            onFileSelect={setSelectedFile} 
+            isLoading={isSubmitting} 
+          />
 
-          <button className="w-full py-4 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-bold text-lg shadow-lg shadow-blue-500/30 transition-all active:scale-[0.98]">
-            {t('detail.submit_request')}
-          </button>
+          {submitSuccess ? (
+             <div className="w-full py-4 bg-green-500 text-white rounded-xl font-bold text-lg flex items-center justify-center gap-2 animate-in zoom-in">
+               <CheckCircle2 className="w-6 h-6" />
+               Заявка отправлена!
+             </div>
+          ) : (
+            <button 
+              onClick={handleSubmitReading}
+              disabled={isSubmitting || !readingInput}
+              className="w-full py-4 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white rounded-xl font-bold text-lg shadow-lg shadow-blue-500/30 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+            >
+              {isSubmitting && <Loader2 className="w-5 h-5 animate-spin" />}
+              {t('detail.submit_request')}
+            </button>
+          )}
         </div>
       </div>
 

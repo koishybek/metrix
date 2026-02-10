@@ -1,4 +1,4 @@
-import { db } from '../firebase';
+import { db, storage } from '../firebase';
 import { 
   collection, 
   addDoc, 
@@ -10,24 +10,41 @@ import {
   updateDoc,
   doc
 } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 export interface ServiceRequest {
   id: string;
   userId: string;
   userPhone: string;
-  type: 'verification' | 'repair' | 'consultation' | 'seal' | 'other';
+  type: 'verification' | 'repair' | 'consultation' | 'seal' | 'account_attach' | 'reading_submit' | 'other';
   status: 'new' | 'processing' | 'completed' | 'cancelled';
   details: string;
   createdAt: any;
   meterSerial?: string;
+  photoUrl?: string;
+  reading?: number;
 }
+
+export const uploadPhoto = async (file: File, path: string): Promise<string> => {
+  try {
+    const storageRef = ref(storage, path);
+    const snapshot = await uploadBytes(storageRef, file);
+    const downloadURL = await getDownloadURL(snapshot.ref);
+    return downloadURL;
+  } catch (error) {
+    console.error("Error uploading photo:", error);
+    throw error;
+  }
+};
 
 export const createServiceRequest = async (
   userId: string, 
   userPhone: string,
   type: ServiceRequest['type'], 
   details: string,
-  meterSerial?: string
+  meterSerial?: string,
+  photoUrl?: string,
+  reading?: number
 ) => {
   try {
     await addDoc(collection(db, 'service_requests'), {
@@ -37,6 +54,8 @@ export const createServiceRequest = async (
       status: 'new',
       details,
       meterSerial: meterSerial || null,
+      photoUrl: photoUrl || null,
+      reading: reading || null,
       createdAt: serverTimestamp()
     });
   } catch (error) {
