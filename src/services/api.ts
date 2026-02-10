@@ -59,7 +59,23 @@ export const getMeterStatus = async (value: string, type: 'serial' | 'account'):
 
     // Use the first result
     const detailData = data.results[0];
-    const currentReading = detailData.reading || 0;
+    const currentReading = detailData.reading ?? detailData.last_reading ?? 0;
+
+    // Use sent_date as the primary source for last update
+    const lastUpdateDate = detailData.sent_date || detailData.reading_dt;
+    
+    // Calculate status based on lastUpdateDate (offline if > 2 days)
+    let status: 'online' | 'offline' = 'offline';
+    if (lastUpdateDate) {
+      const lastUpdate = new Date(lastUpdateDate);
+      const now = new Date();
+      const diffTime = Math.abs(now.getTime() - lastUpdate.getTime());
+      const diffHours = diffTime / (1000 * 60 * 60);
+      
+      if (diffHours <= 48) {
+        status = 'online';
+      }
+    }
 
     // Use serial number as account name if account_id is missing, as requested
     const accountName = detailData.account_id || `Счетчик ${detailData.serial_number || value}`;
@@ -69,8 +85,8 @@ export const getMeterStatus = async (value: string, type: 'serial' | 'account'):
       account: accountName,
       serial: detailData.serial_number || value,
       reading: currentReading, 
-      last_update: detailData.reading_dt || new Date().toISOString(),
-      status: detailData.is_active !== false ? 'online' : 'offline', 
+      last_update: lastUpdateDate || detailData.join_date || new Date().toISOString(),
+      status: status, 
       last_consumption: 0.1 + Math.random() * 0.2, // Mock daily consumption for now
       history: generateMockHistory(currentReading), // Generate mock history for the chart
       
