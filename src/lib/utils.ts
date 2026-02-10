@@ -51,7 +51,7 @@ export const generateWhatsAppLink = (
   return `https://wa.me/${PHONE_NUMBER}?text=${encodeURIComponent(message)}`;
 };
 
-export const compressImage = async (file: File, maxWidth = 800, quality = 0.6): Promise<File> => {
+export const compressImage = async (file: File, maxWidth = 600, quality = 0.5): Promise<File> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);

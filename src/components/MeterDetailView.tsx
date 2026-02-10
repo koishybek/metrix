@@ -32,11 +32,30 @@ export const MeterDetailView: React.FC<MeterDetailViewProps> = ({ meter, savedMe
   const [activeTab, setActiveTab] = useState<'info' | 'readings' | 'notifications'>('readings');
   const [readingInput, setReadingInput] = useState<string>('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [compressedFile, setCompressedFile] = useState<File | null>(null);
+  const [isCompressing, setIsCompressing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   
   const { t, language } = useI18n();
   const { user } = useAuth();
+
+  const handleFileSelect = async (file: File | null) => {
+    setSelectedFile(file);
+    if (file) {
+      setIsCompressing(true);
+      try {
+        const compressed = await compressImage(file);
+        setCompressedFile(compressed);
+      } catch (error) {
+        console.error('Compression error:', error);
+      } finally {
+        setIsCompressing(false);
+      }
+    } else {
+      setCompressedFile(null);
+    }
+  };
 
   const formatDate = (dateString?: string | null) => {
     if (!dateString) return t('detail.not_specified');
@@ -62,10 +81,7 @@ export const MeterDetailView: React.FC<MeterDetailViewProps> = ({ meter, savedMe
     try {
       let photoUrl = undefined;
       
-      if (selectedFile) {
-        // Compress image before upload
-        const compressedFile = await compressImage(selectedFile);
-        
+      if (compressedFile) {
         // Create a unique path for the photo
         const timestamp = Date.now();
         const path = `readings/${user.id}/${meter.serial}/${timestamp}_${compressedFile.name}`;
@@ -85,6 +101,7 @@ export const MeterDetailView: React.FC<MeterDetailViewProps> = ({ meter, savedMe
       setSubmitSuccess(true);
       setReadingInput('');
       setSelectedFile(null);
+      setCompressedFile(null);
       
       // Reset success message after 2 seconds
       setTimeout(() => {
@@ -183,17 +200,18 @@ export const MeterDetailView: React.FC<MeterDetailViewProps> = ({ meter, savedMe
           </div>
           
           <PhotoUpload 
-            onFileSelect={setSelectedFile} 
-            isLoading={isSubmitting} 
+            onFileSelect={handleFileSelect} 
+            isLoading={isSubmitting || isCompressing} 
           />
 
           <button 
             onClick={handleSubmitReading}
-            disabled={isSubmitting || !readingInput}
+            disabled={isSubmitting || isCompressing || !readingInput}
             className="w-full py-4 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white rounded-xl font-bold text-lg shadow-lg shadow-blue-500/30 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
           >
-            {isSubmitting && <Loader2 className="w-5 h-5 animate-spin" />}
-            {t('detail.submit_request')}
+            {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 
+             isCompressing ? <span className="text-sm">Сжатие фото...</span> : 
+             t('detail.submit_request')}
           </button>
         </div>
       </div>
