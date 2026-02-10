@@ -3,6 +3,7 @@ import { SavedMeter } from '../services/db';
 import { Droplet, MapPin, ChevronRight, AlertCircle, Trash2, CheckCircle2, Loader2, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { createServiceRequest } from '../services/requests';
+import { SuccessAnimation } from './SuccessAnimation';
 
 interface MeterListItemProps {
   meter: SavedMeter;
@@ -120,12 +121,7 @@ export const MeterListItem: React.FC<MeterListItemProps> = ({ meter, onClick, on
         className="bg-blue-500 min-h-[48px] px-4 flex justify-center items-center text-white font-bold text-sm hover:bg-blue-600 transition-colors mt-2 relative overflow-hidden"
         onClick={(e) => isAttaching && e.stopPropagation()}
       >
-        {isSuccess ? (
-           <div className="flex items-center gap-2 animate-in zoom-in">
-             <CheckCircle2 className="w-5 h-5" />
-             <span>Запрос отправлен!</span>
-           </div>
-        ) : isAttaching ? (
+        {isAttaching ? (
           <div className="flex items-center gap-2 w-full animate-in slide-in-from-bottom duration-300">
             <input
               type="text"
@@ -158,6 +154,8 @@ export const MeterListItem: React.FC<MeterListItemProps> = ({ meter, onClick, on
           </button>
         )}
       </div>
+
+      <SuccessAnimation isVisible={isSuccess} message="Запрос отправлен!" />
     </div>
   );
 };

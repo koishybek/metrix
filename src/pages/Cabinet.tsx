@@ -15,6 +15,7 @@ import { ResultCard } from '../components/ResultCard';
 import { useI18n } from '../context/I18nContext';
 import { generateWhatsAppLink } from '../lib/utils';
 import { FAQ } from '../components/FAQ';
+import { SuccessAnimation } from '../components/SuccessAnimation';
 
 export const Cabinet: React.FC = () => {
   const { user, logout } = useAuth();
@@ -145,6 +146,7 @@ export const Cabinet: React.FC = () => {
   const [selectedService, setSelectedService] = useState<{type: ServiceRequest['type'], title: string} | null>(null);
   const [serviceComment, setServiceComment] = useState('');
   const [serviceMeter, setServiceMeter] = useState('');
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const openServiceModal = (type: ServiceRequest['type'], title: string) => {
     setSelectedService({ type, title });
@@ -173,7 +175,10 @@ export const Cabinet: React.FC = () => {
 
       await loadRequests();
       setShowServiceModal(false);
-      alert('Заявка успешно отправлена! Мы получили уведомление в Telegram и на почту.');
+      
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 2000);
+
     } catch (error) {
       alert('Ошибка при отправке заявки');
     } finally {
@@ -541,6 +546,8 @@ export const Cabinet: React.FC = () => {
         )}
 
       </div>
+
+      <SuccessAnimation isVisible={showSuccess} message="Заявка принята!" />
     </div>
   );
 };

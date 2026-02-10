@@ -20,6 +20,7 @@ import { PhotoUpload } from './PhotoUpload';
 import { createServiceRequest, uploadPhoto } from '../services/requests';
 import { useAuth } from '../context/AuthContext';
 import { compressImage } from '../lib/utils';
+import { SuccessAnimation } from './SuccessAnimation';
 
 interface MeterDetailViewProps {
   meter: MeterData;
@@ -85,10 +86,10 @@ export const MeterDetailView: React.FC<MeterDetailViewProps> = ({ meter, savedMe
       setReadingInput('');
       setSelectedFile(null);
       
-      // Reset success message after 3 seconds
+      // Reset success message after 2 seconds
       setTimeout(() => {
         setSubmitSuccess(false);
-      }, 3000);
+      }, 2000);
 
     } catch (error) {
       console.error('Error submitting reading:', error);
@@ -186,23 +187,18 @@ export const MeterDetailView: React.FC<MeterDetailViewProps> = ({ meter, savedMe
             isLoading={isSubmitting} 
           />
 
-          {submitSuccess ? (
-             <div className="w-full py-4 bg-green-500 text-white rounded-xl font-bold text-lg flex items-center justify-center gap-2 animate-in zoom-in">
-               <CheckCircle2 className="w-6 h-6" />
-               Заявка отправлена!
-             </div>
-          ) : (
-            <button 
-              onClick={handleSubmitReading}
-              disabled={isSubmitting || !readingInput}
-              className="w-full py-4 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white rounded-xl font-bold text-lg shadow-lg shadow-blue-500/30 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
-            >
-              {isSubmitting && <Loader2 className="w-5 h-5 animate-spin" />}
-              {t('detail.submit_request')}
-            </button>
-          )}
+          <button 
+            onClick={handleSubmitReading}
+            disabled={isSubmitting || !readingInput}
+            className="w-full py-4 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white rounded-xl font-bold text-lg shadow-lg shadow-blue-500/30 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+          >
+            {isSubmitting && <Loader2 className="w-5 h-5 animate-spin" />}
+            {t('detail.submit_request')}
+          </button>
         </div>
       </div>
+      
+      <SuccessAnimation isVisible={submitSuccess} message="Показания приняты!" />
 
       {/* Chart */}
       <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
