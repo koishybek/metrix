@@ -14,12 +14,13 @@ import { InputForm } from '../components/InputForm';
 import { ResultCard } from '../components/ResultCard';
 import { useI18n } from '../context/I18nContext';
 import { generateWhatsAppLink } from '../lib/utils';
+import { FAQ } from '../components/FAQ';
 
 export const Cabinet: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const { t } = useI18n();
-  const [activeTab, setActiveTab] = useState<'meters' | 'services' | 'notifications' | 'profile'>('meters');
+  const [activeTab, setActiveTab] = useState<'meters' | 'services' | 'notifications' | 'profile' | 'faq'>('meters');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [meters, setMeters] = useState<SavedMeter[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -223,6 +224,7 @@ export const Cabinet: React.FC = () => {
               {activeTab === 'services' && t('services.title')}
               {activeTab === 'notifications' && t('notif.title')}
               {activeTab === 'profile' && t('profile.title')}
+              {activeTab === 'faq' && t('menu.faq')}
             </h1>
           </div>
           
@@ -397,6 +399,9 @@ export const Cabinet: React.FC = () => {
             </button>
           </div>
         )}
+
+        {/* === FAQ TAB === */}
+        {activeTab === 'faq' && <FAQ />}
 
         {/* CHECK & ADD MODAL (Fullscreen) */}
         {showAddModal && (

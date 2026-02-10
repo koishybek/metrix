@@ -24,6 +24,7 @@ const translations = {
     'menu.services': 'Услуги',
     'menu.notifications': 'Уведомления',
     'menu.profile': 'Профиль',
+    'menu.faq': 'Вопросы и ответы',
     'menu.logout': 'Выйти',
     'menu.client_type': 'Частный клиент',
 
@@ -133,6 +134,7 @@ const translations = {
     'menu.services': 'Қызметтер',
     'menu.notifications': 'Хабарламалар',
     'menu.profile': 'Профиль',
+    'menu.faq': 'Сұрақ-жауап',
     'menu.logout': 'Шығу',
     'menu.client_type': 'Жеке клиент',
 
@@ -217,6 +219,7 @@ const translations = {
     'menu.services': 'Services',
     'menu.notifications': 'Notifications',
     'menu.profile': 'Profile',
+    'menu.faq': 'FAQ',
     'menu.logout': 'Logout',
     'menu.client_type': 'Private Client',
 

@@ -1,13 +1,13 @@
 import React from 'react';
-import { Home, Wrench, User, Bell, X, LogOut, Globe } from 'lucide-react';
+import { Home, Wrench, User, Bell, X, LogOut, HelpCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useI18n } from '../context/I18nContext';
 
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
-  activeTab: 'meters' | 'services' | 'notifications' | 'profile';
-  onChange: (tab: 'meters' | 'services' | 'notifications' | 'profile') => void;
+  activeTab: 'meters' | 'services' | 'notifications' | 'profile' | 'faq';
+  onChange: (tab: 'meters' | 'services' | 'notifications' | 'profile' | 'faq') => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, activeTab, onChange }) => {
@@ -95,6 +95,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, activeTab, on
             >
               <User className="w-5 h-5" />
               {t('menu.profile')}
+            </button>
+
+            <button
+              onClick={() => handleNav('faq')}
+              className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all ${
+                activeTab === 'faq' ? 'bg-blue-50 text-blue-600 font-bold' : 'text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              <HelpCircle className="w-5 h-5" />
+              {t('menu.faq')}
             </button>
           </nav>
 
