@@ -9,7 +9,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyBQrzqAi86fVhbntzzTNVdX9svJftgfYYw",
   authDomain: "metrix-d902d.firebaseapp.com",
   projectId: "metrix-d902d",
-  storageBucket: "metrix-d902d.appspot.com",
+  storageBucket: "metrix-d902d.firebasestorage.app",
   messagingSenderId: "358273507422",
   appId: "1:358273507422:web:96a05095e819ab65f154cf",
   measurementId: "G-YPJX08G65Q"

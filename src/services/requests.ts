@@ -46,10 +46,15 @@ export const uploadPhoto = async (file: File, path: string): Promise<string> => 
 
       const downloadURL = await getDownloadURL(snapshot.ref);
       return downloadURL;
-    } catch (error) {
+    } catch (error: any) {
       attempts++;
       console.error(`Upload attempt ${attempts} failed:`, error);
       
+      // Check for 404 specifically (Bucket not found)
+      if (error?.code === 'storage/object-not-found' || error?.message?.includes('404')) {
+        throw new Error('Ошибка конфигурации: Хранилище (Storage) не найдено или не включено в Firebase Console.');
+      }
+
       if (attempts >= maxAttempts) {
         throw error;
       }
