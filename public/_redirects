@@ -1,0 +1,2 @@
+/api/*  https://sm.iot-exp.kz/api/:splat  200
+/*      /index.html                       200
