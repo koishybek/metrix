@@ -14,7 +14,9 @@ import {
   Inbox,
   CheckCircle,
   Clock,
-  XCircle
+  XCircle,
+  Image as ImageIcon,
+  X
 } from 'lucide-react';
 
 export const Admin: React.FC = () => {
@@ -25,6 +27,7 @@ export const Admin: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'users' | 'requests'>('requests');
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
+  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -163,6 +166,7 @@ export const Admin: React.FC = () => {
                     <th className="px-6 py-4 text-sm font-medium text-gray-500">Дата</th>
                     <th className="px-6 py-4 text-sm font-medium text-gray-500">Клиент</th>
                     <th className="px-6 py-4 text-sm font-medium text-gray-500">Услуга</th>
+                    <th className="px-6 py-4 text-sm font-medium text-gray-500">Фото</th>
                     <th className="px-6 py-4 text-sm font-medium text-gray-500">Статус</th>
                     <th className="px-6 py-4 text-sm font-medium text-gray-500">Действия</th>
                   </tr>
@@ -178,6 +182,22 @@ export const Admin: React.FC = () => {
                       </td>
                       <td className="px-6 py-4">
                         <span className="bg-gray-100 px-2 py-1 rounded text-sm">{req.details}</span>
+                        {req.reading && (
+                          <div className="text-xs text-gray-500 mt-1">Показание: {req.reading}</div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        {req.photoUrl ? (
+                          <button 
+                            onClick={() => setSelectedPhoto(req.photoUrl!)}
+                            className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-1 text-xs font-bold"
+                          >
+                            <ImageIcon className="w-4 h-4" />
+                            См. фото
+                          </button>
+                        ) : (
+                          <span className="text-gray-300 text-xs">-</span>
+                        )}
                       </td>
                       <td className="px-6 py-4">
                         <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${
@@ -309,6 +329,28 @@ export const Admin: React.FC = () => {
             </div>
           ))}
         </div>
+        </div>
+      )}
+      {/* Photo Modal */}
+      {selectedPhoto && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+          onClick={() => setSelectedPhoto(null)}
+        >
+          <div className="relative max-w-4xl max-h-[90vh] w-full flex items-center justify-center">
+            <button 
+              onClick={() => setSelectedPhoto(null)}
+              className="absolute -top-12 right-0 p-2 text-white hover:bg-white/10 rounded-full transition-colors"
+            >
+              <X className="w-8 h-8" />
+            </button>
+            <img 
+              src={selectedPhoto} 
+              alt="Evidence" 
+              className="max-w-full max-h-[85vh] rounded-lg shadow-2xl object-contain bg-black"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
         </div>
       )}
     </div>
