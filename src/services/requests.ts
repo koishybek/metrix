@@ -1,4 +1,4 @@
-import { db, storage } from '../firebase';
+import { db } from '../firebase';
 import { 
   collection, 
   addDoc, 
@@ -10,7 +10,7 @@ import {
   updateDoc,
   doc
 } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { fileToBase64 } from '../lib/utils';
 
 export interface ServiceRequest {
   id: string;
@@ -26,43 +26,15 @@ export interface ServiceRequest {
 }
 
 export const uploadPhoto = async (file: File, path: string): Promise<string> => {
-  let attempts = 0;
-  const maxAttempts = 3;
-
-  while (attempts < maxAttempts) {
-    try {
-      const storageRef = ref(storage, path);
-      
-      // Increased timeout to 90 seconds per attempt
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Upload timed out')), 90000);
-      });
-
-      // Using uploadBytes for simplicity with Blob/File
-      const snapshot = await Promise.race([
-        uploadBytes(storageRef, file),
-        timeoutPromise
-      ]);
-
-      const downloadURL = await getDownloadURL(snapshot.ref);
-      return downloadURL;
-    } catch (error: any) {
-      attempts++;
-      console.error(`Upload attempt ${attempts} failed:`, error);
-      
-      // Check for 404 specifically (Bucket not found)
-      if (error?.code === 'storage/object-not-found' || error?.message?.includes('404')) {
-        throw new Error('Ошибка конфигурации: Хранилище (Storage) не найдено или не включено в Firebase Console.');
-      }
-
-      if (attempts >= maxAttempts) {
-        throw error;
-      }
-      // Wait 1 second before retrying
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
+  try {
+    // Convert file to Base64 string directly
+    // bypassing Firebase Storage to avoid payment/plan issues
+    const base64 = await fileToBase64(file);
+    return base64;
+  } catch (error) {
+    console.error("Error converting photo:", error);
+    throw error;
   }
-  throw new Error('All upload attempts failed');
 };
 
 export const createServiceRequest = async (

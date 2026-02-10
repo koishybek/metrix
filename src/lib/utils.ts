@@ -94,3 +94,12 @@ export const compressImage = async (file: File, maxWidth = 600, quality = 0.5): 
     reader.onerror = (error) => reject(error);
   });
 };
+
+export const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
+};
