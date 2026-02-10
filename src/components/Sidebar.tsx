@@ -125,13 +125,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, activeTab, on
           </div>
 
           {/* Footer */}
-          <button 
-            onClick={logout}
-            className="flex items-center gap-4 p-4 text-red-500 hover:bg-red-50 rounded-xl transition-colors font-medium"
-          >
-            <LogOut className="w-5 h-5" />
-            {t('menu.logout')}
-          </button>
+          <div className="space-y-2">
+            <button 
+              onClick={logout}
+              className="w-full flex items-center gap-4 p-4 text-red-500 hover:bg-red-50 rounded-xl transition-colors font-medium"
+            >
+              <LogOut className="w-5 h-5" />
+              {t('menu.logout')}
+            </button>
+            <p className="text-center text-[10px] text-gray-300">v1.2 (Vercel)</p>
+          </div>
         </div>
       </div>
     </>

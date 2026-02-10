@@ -108,9 +108,9 @@ export const MeterDetailView: React.FC<MeterDetailViewProps> = ({ meter, savedMe
         setSubmitSuccess(false);
       }, 2000);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting reading:', error);
-      alert('Ошибка при отправке данных. Попробуйте позже.');
+      alert(`Ошибка при отправке: ${error?.message || 'Неизвестная ошибка'}. Попробуйте позже.`);
     } finally {
       setIsSubmitting(false);
     }
