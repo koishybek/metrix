@@ -1,8 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/api/:match*",
-      "destination": "https://sm.iot-exp.kz/api/:match*"
+      "source": "/api/(.*)",
+      "destination": "https://sm.iot-exp.kz/api/$1"
     },
     {
       "source": "/(.*)",
