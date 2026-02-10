@@ -19,6 +19,7 @@ import { useI18n } from '../context/I18nContext';
 import { PhotoUpload } from './PhotoUpload';
 import { createServiceRequest, uploadPhoto } from '../services/requests';
 import { useAuth } from '../context/AuthContext';
+import { compressImage } from '../lib/utils';
 
 interface MeterDetailViewProps {
   meter: MeterData;
@@ -61,10 +62,13 @@ export const MeterDetailView: React.FC<MeterDetailViewProps> = ({ meter, savedMe
       let photoUrl = undefined;
       
       if (selectedFile) {
+        // Compress image before upload
+        const compressedFile = await compressImage(selectedFile);
+        
         // Create a unique path for the photo
         const timestamp = Date.now();
-        const path = `readings/${user.id}/${meter.serial}/${timestamp}_${selectedFile.name}`;
-        photoUrl = await uploadPhoto(selectedFile, path);
+        const path = `readings/${user.id}/${meter.serial}/${timestamp}_${compressedFile.name}`;
+        photoUrl = await uploadPhoto(compressedFile, path);
       }
 
       await createServiceRequest(

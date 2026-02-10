@@ -28,7 +28,18 @@ export interface ServiceRequest {
 export const uploadPhoto = async (file: File, path: string): Promise<string> => {
   try {
     const storageRef = ref(storage, path);
-    const snapshot = await uploadBytes(storageRef, file);
+    
+    // Create a timeout promise (30 seconds)
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('Upload timed out')), 30000);
+    });
+
+    // Race between upload and timeout
+    const snapshot = await Promise.race([
+      uploadBytes(storageRef, file),
+      timeoutPromise
+    ]);
+
     const downloadURL = await getDownloadURL(snapshot.ref);
     return downloadURL;
   } catch (error) {
