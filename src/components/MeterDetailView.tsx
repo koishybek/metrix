@@ -11,7 +11,8 @@ import {
   Edit2,
   AlertTriangle,
   Loader2,
-  CheckCircle2
+  CheckCircle2,
+  X
 } from 'lucide-react';
 import { SavedMeter } from '../services/db';
 import { HistoryChart } from './HistoryChart';
@@ -36,9 +37,43 @@ export const MeterDetailView: React.FC<MeterDetailViewProps> = ({ meter, savedMe
   const [isCompressing, setIsCompressing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-  
+  const [isAccountAttaching, setIsAccountAttaching] = useState(false);
+  const [accountInput, setAccountInput] = useState('');
+  const [isAccountSubmitting, setIsAccountSubmitting] = useState(false);
+  const [accountSuccess, setAccountSuccess] = useState(false);
+
   const { t, language } = useI18n();
   const { user } = useAuth();
+
+  const handleAccountSubmit = async () => {
+    if (!user) return;
+    if (!accountInput.trim()) {
+      alert('Введите номер лицевого счета');
+      return;
+    }
+
+    setIsAccountSubmitting(true);
+    try {
+      await createServiceRequest(
+        user.id,
+        user.phone,
+        'account_attach',
+        `Запрос на прикрепление лицевого счета: ${accountInput}`,
+        meter.serial
+      );
+      
+      setAccountSuccess(true);
+      setTimeout(() => {
+        setAccountSuccess(false);
+        setIsAccountAttaching(false);
+        setAccountInput('');
+      }, 3000);
+    } catch (error) {
+      alert('Ошибка при отправке запроса');
+    } finally {
+      setIsAccountSubmitting(false);
+    }
+  };
 
   const handleFileSelect = async (file: File | null) => {
     setSelectedFile(file);
@@ -223,6 +258,7 @@ export const MeterDetailView: React.FC<MeterDetailViewProps> = ({ meter, savedMe
       </div>
       
       <SuccessAnimation isVisible={submitSuccess} message="Показания приняты!" />
+      <SuccessAnimation isVisible={accountSuccess} message="Запрос отправлен!" />
 
       {/* Chart */}
       <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
@@ -286,6 +322,44 @@ export const MeterDetailView: React.FC<MeterDetailViewProps> = ({ meter, savedMe
             <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
             <p className="text-sm text-gray-600 line-clamp-2">{meter.address}</p>
           </div>
+          
+          {/* Attach Account Button (if missing) */}
+          {!meter.account && (
+            <div className="mt-2">
+              {isAccountAttaching ? (
+                <div className="flex items-center gap-2 animate-in slide-in-from-top-2 duration-200">
+                  <input
+                    type="text"
+                    value={accountInput}
+                    onChange={(e) => setAccountInput(e.target.value)}
+                    placeholder="Номер Л/С"
+                    className="flex-1 px-3 py-2 border rounded-lg text-sm outline-none focus:border-blue-500"
+                    autoFocus
+                  />
+                  <button 
+                    onClick={handleAccountSubmit}
+                    disabled={isAccountSubmitting}
+                    className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
+                  >
+                    {isAccountSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                  </button>
+                  <button 
+                    onClick={() => setIsAccountAttaching(false)}
+                    className="p-2 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setIsAccountAttaching(true)}
+                  className="text-xs font-bold text-blue-500 hover:text-blue-600 flex items-center gap-1 mt-1"
+                >
+                  + Прикрепить лицевой счет
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Meter Type Card */}
