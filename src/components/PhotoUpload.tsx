@@ -3,7 +3,7 @@ import { Camera, Check, Loader2, Image as ImageIcon, X } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 interface PhotoUploadProps {
-  onFileSelect: (file: File | null) => void;
+  onFileSelect?: (file: File | null) => void;
   isLoading?: boolean;
 }
 
@@ -18,7 +18,9 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({ onFileSelect, isLoadin
       setSelectedFile(file);
       const url = URL.createObjectURL(file);
       setPreviewUrl(url);
-      onFileSelect(file);
+      if (onFileSelect) {
+        onFileSelect(file);
+      }
     }
   };
 
@@ -28,7 +30,9 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({ onFileSelect, isLoadin
       URL.revokeObjectURL(previewUrl);
       setPreviewUrl(null);
     }
-    onFileSelect(null);
+    if (onFileSelect) {
+      onFileSelect(null);
+    }
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
